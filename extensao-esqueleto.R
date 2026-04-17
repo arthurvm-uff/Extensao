@@ -52,11 +52,24 @@ write.csv(dados_sinasc_2, "dados_sinasc_2.csv", row.names = TRUE)
 # Tarefa 4. Verificar em dados_sinasc_2 a frequência das categorias das seguintes variáveis: LOCNASC, ESTCIVMAE, GESTACAO, GRAVIDEZ, PARTO,
 # SEXO, APGAR5, RACACOR, IDANOMAL, ESCMAE2010, RACACORMAE, TPAPRESENT, TPROBSON, PARIDADE, KOTELCHUCK
 
+vars_interesse <- c("LOCNASC", "ESTCIVMAE", "GESTACAO", "GRAVIDEZ", "PARTO", 
+                    "SEXO", "APGAR5", "RACACOR", "IDANOMAL", "ESCMAE2010", 
+                    "RACACORMAE", "TPAPRESENT", "TPROBSON", "PARIDADE", "KOTELCHUCK")
+lapply(dados_sinasc_2[vars_interesse], table, useNA = "always")
 
 # Tarefa 5. Atribuir para cada variável de dados_sinasc_2 como sendo NA a categoria de "Não informado ou Ignorado", geralmente com código 9
 # KOTELCHUCK = 9 significa "não informado"   TPROBSON = 11 significa "não classificado por falta de informação"
 # veja o dicionário do SINASC para identificar qual o código das categorias de cada variável
 
+dados_sinasc_2$TPROBSON[dados_sinasc_2$TPROBSON == 11] <- NA
+dados_sinasc_2$KOTELCHUCK[dados_sinasc_2$KOTELCHUCK == 9] <- NA
+dados_sinasc_2$TPAPRESENT[dados_sinasc_2$TPAPRESENT == 9] <- NA
+dados_sinasc_2$SEXO[dados_sinasc_2$SEXO == 0] <- NA
+dados_sinasc_2$PARTO[dados_sinasc_2$PARTO == 9] <- NA
+dados_sinasc_2$GRAVIDEZ[dados_sinasc_2$GRAVIDEZ == 9] <- NA
+dados_sinasc_2$LOCNASC[dados_sinasc_2$LOCNASC == 9] <- NA
+dados_sinasc_2$ESTCIVMAE[dados_sinasc_2$ESTCIVMAE == 9] <- NA
+dados_sinasc_2$ESCMAE2010[dados_sinasc_2$ESCMAE2010 == 9] <- NA
 
 # Tarefa 6. Atribuir legendas para as categorias das variáveis investigadas na etapa 4.
 # Exemplo: dados_sinasc_2$KOTELCHUCK = factor(dados_sinasc_2$KOTELCHUCK, levels = c(1,2,3,4,5), 
@@ -66,6 +79,20 @@ write.csv(dados_sinasc_2, "dados_sinasc_2.csv", row.names = TRUE)
 # ATENçÃO: 1. Na hora de escrever os labels, somente a primeira letra da palavra é maiúscula. Exemplo para SEXO: Feminino e Masculino
 #          2. Nesta Tarefa 6 não crie novas variáveis no banco de dados
 
+dados_sinasc_2$KOTELCHUCK=factor(dados_sinasc_2$KOTELCHUCK, levels = c(1,2,3,4,5), labels = c("Não realizou pré-natal", "Inadequado", "Intermediário", "Adequado", "Mais que adequado"))
+dados_sinasc_2$PARIDADE = factor(dados_sinasc_2$PARIDADE, levels = c(1,2), labels = c("Multípara", "Nulípara"))
+dados_sinasc_2$TPAPRESENT=factor(dados_sinasc_2$TPAPRESENT, levels = c(1,2,3), labels = c("Cefálico", "Pélvica ou podálica", "Transversa"))
+dados_sinasc_2$RACACORMAE=factor(dados_sinasc_2$RACACORMAE, levels = c(1,2,3,4,5), labels = c("Branca", "Preta", "Amarela", "Parda", "Indígena"))
+dados_sinasc_2$ESCMAE2010=factor(dados_sinasc_2$ESCMAE2010, levels = c(0,1,2,3,4,5), labels = c("Sem escolaridade", "Fundamental I (1a a 4a série)", "Fundamental II (5a a 8a série)", "Médio (antigo 2o Grau)", "Superior
+incompleto", "Superior completo"))
+dados_sinasc_2$IDANOMAL=factor(dados_sinasc_2$IDANOMAL, levels = c(1,2), labels = c("Sim", "Não"))
+dados_sinasc_2$RACACOR=factor(dados_sinasc_2$RACACOR, levels = c(1,2,3,4,5), labels = c("Branca", "Preta", "Amarela", "Parda", "Indígena"))
+dados_sinasc_2$SEXO=factor(dados_sinasc_2$SEXO, levels = c(1,2), labels = c("Masculino", "Feminino"))
+dados_sinasc_2$PARTO=factor(dados_sinasc_2$PARTO, levels = c(1,2), labels = c("Vaginal", "Cesário"))
+dados_sinasc_2$GRAVIDEZ=factor(dados_sinasc_2$GRAVIDEZ, levels = c(1,2,3), labels = c("Única", "Dupla", "Tripla ou mais"))
+dados_sinasc_2$GESTACAO=factor(dados_sinasc_2$GESTACAO, levels = c(1,2,3,4,5,6), labels = c("Menos de 22 semanas", "22 a 27 semanas", "28 a 31 semanas", "32 a 36 semanas", "37 a 41 semanas", "42 semanas e mais"))
+dados_sinasc_2$ESTCIVMAE=factor(dados_sinasc_2$ESTCIVMAE, levels = c(1,2,3,4,5), labels = c("Solteira", "Casada", "Viúva", "Separada judicialmente/divorciada", "União estável"))
+dados_sinasc_2$LOCNASC=factor(dados_sinasc_2$LOCNASC, levels = c(1,2,3,4,5), labels = c("Hospital", "Outros estabelecimentos de saúde", "Domicílio", "Outros", "Aldeia indígena"))
 
 # Tarefa 7. Categorizar as variáveis IDADEMAE, PESO e APGAR5
 # nova variável: dados_sinasc_2$F_PESO com PESO: < 2500: Baixo peso, >=2500 e < 4000: Peso normal, >= 4000: Macrossomia
@@ -74,6 +101,22 @@ write.csv(dados_sinasc_2, "dados_sinasc_2.csv", row.names = TRUE)
 # Atenção para casos de NA em IDADEMAE, PESO e APGAR5
 # Ao categorizar as variáveis, garantir que sejam transformadas em tipo fator
 
+dados_sinasc_2$F_PESO <- factor(
+  findInterval(dados_sinasc_2$PESO, c(0, 2500, 4000)),
+  levels = c(1, 2, 3),
+  labels = c("Baixo peso", "Peso normal", "Macrossomia")
+)
+
+quebras_idade <- c(0, 15, 20, 25, 30, 35, 40, 45, 50, Inf)
+labels_idade  <- c("<15", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50+")
+dados_sinasc_2$F_IDADE <- factor(
+  findInterval(dados_sinasc_2$IDADEMAE, quebras_idade),
+  levels = 1:9,
+  labels = labels_idade
+)
+
+dados_sinasc_2$F_APGAR5 <- ifelse(dados_sinasc_2$APGAR5 < 7, "Baixo", "Normal")
+dados_sinasc_2$F_APGAR5 <- factor(dados_sinasc_2$F_APGAR5, levels = c("Baixo", "Normal"))
 
 # Tarefa 8. Agregar ao banco de dados_sinasc_2 as informações PESO_P10 e PESO_P90 a partir de Tabela_PIG_Brasil.csv
 # a Tabela PIG informa P10 e P90 dos pesos, de acordo com a idade gestacional
