@@ -762,8 +762,9 @@ nomes <- names(base_completa)
 outros_nomes <- nomes[!nomes %in% c("CODMUNRES", "NIVEL", "ANO")]
 base_completa <- base_completa[, c("ANO", "NIVEL", "CODMUNRES", outros_nomes)]
 
-
 # Tarefa 8: Exporte o banco de dados com o nome SIM_UF.csv
+
+write.csv(base_completa, "SIM_AM.csv")
 
 # Ao terminar a ETAPA 2 commite e envie para o repositório REMOTO com o comentário "Dados da UF e Script Etapa 2"
 # Faça um merge de script de SIM para main
