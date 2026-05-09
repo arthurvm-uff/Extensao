@@ -471,15 +471,43 @@ write.csv(dados_sim_2, "dados_sim_2.csv", row.names = TRUE)
 # Tarefa 4. Verificar em dados_sim_2 a frequência das categorias das seguintes variáveis: TIPOBITO, SEXO, RACACOR, 
 # TPMORTEOCO, OBITOGRAV, OBITOPUERP, CAUSABAS, TPOBITOCOR, MORTEPARTO
 
+table(dados_sim_2$TIPOBITO)
+table(dados_sim_2$SEXO)
+table(dados_sim_2$RACACOR)
+table(dados_sim_2$TPMORTEOCO)
+table(dados_sim_2$OBITOGRAV)
+table(dados_sim_2$OBITOPUERP)
+table(dados_sim_2$CAUSABAS)
+table(dados_sim_2$TPOBITOCOR)
+table(dados_sim_2$MORTEPARTO)
+table(dados_sim_2$ESC2010)
 
 # Tarefa 5. Atribuir para cada variável de dados_sim_2 como sendo NA a categoria de "Não informado ou Ignorado", geralmente com código 9
 # veja o dicionário do SIM para identificar qual o código das categorias de cada variável
 # Em variáveis quantitativas como IDADE verificar se existem valores como 99 para NA
 
+dados_sim_2$SEXO[dados_sim_2$SEXO == 0] = NA
+dados_sim_2$TPMORTEOCO[dados_sim_2$TPMORTEOCO == 9] = NA
+dados_sim_2$OBITOGRAV[dados_sim_2$OBITOGRAV == 9] = NA
+dados_sim_2$OBITOPUERP[dados_sim_2$OBITOPUERP == 9] = NA
+dados_sim_2$TPOBITOCOR[dados_sim_2$TPOBITOCOR == 9] = NA
+dados_sim_2$MORTEPARTO[dados_sim_2$MORTEPARTO == 9] = NA
+dados_sim_2$IDADE[dados_sim_2$IDADE == 9] = NA
+dados_sim_2$ESC2010[dados_sim_2$ESC2010 == 9] = NA
 
 # Tarefa 6. Atribuir legendas para as categorias das variáveis qualitativas investigadas na tarefa 4.
 # Exemplo: dados_sim_2$TIPOBITO = factor(dados_sim_2$TIPOBITO, levels = c(1,2), 
 # labels = c("Fetal", "Não fetal")
+
+dados_sim_2$SEXO = factor(dados_sim_2$SEXO, levels = c(1, 2), labels = c("Masculino", "Feminino"))
+dados_sim_2$TIPOBITO = factor(dados_sim_2$TIPOBITO, levels = c(1, 2), labels = c("Fetal", "Não fetal"))
+dados_sim_2$RACACOR = factor(dados_sim_2$RACACOR, levels = c(1, 2, 3, 4, 5), labels = c("Branca", "Preta", "Amarela", "Parda", "Indígena"))
+dados_sim_2$TPMORTEOCO = factor(dados_sim_2$TPMORTEOCO, levels = c(1, 2, 3, 4, 5, 8), labels = c("Na gravidez", "No parto", "No abortamento", "Até 42 dias após o término do parto", "De 43 dias a 1 ano após o término da gestação", "Não ocorreu nestes períodos"))
+dados_sim_2$OBITOPUERP = factor(dados_sim_2$OBITOPUERP, levels = c(1, 2, 3), labels = c("Sim, até 42 dias após o parto", "Sim, de 43 dias a 1 ano", "Não"))
+dados_sim_2$TPOBITOCOR = factor(dados_sim_2$TPOBITOCOR, levels = c(1, 2, 3, 4, 5), labels = c("Via pública", "Endereço de residência", "Outro domicílio", "Estabelecimento comercial", "Outros"))
+dados_sim_2$OBITOGRAV = factor(dados_sim_2$OBITOGRAV, levels = c(1, 2), labels = c("Sim", "Não"))
+dados_sim_2$MORTEPARTO = factor(dados_sim_2$MORTEPARTO, levels = c(1, 2, 3), labels = c("Antes", "Durante", "Após"))
+dados_sim_2$ESC2010 = factor(dados_sim_2$ESC2010, levels = c(0, 1, 2, 3, 4, 5), labels = c("Sem escolaridade", "Fundamental I (1ª a 4ª série)", "Fundamental II (5ª a 8ª série)", "Médio (antigo 2º Grau)", "Superior incompleto", "Superior completo"))
 
 # ATENçÃO: 1. Na hora de escrever os labels, somente a primeira letra da palavra é maiúscula. Exemplo para SEXO: Feminino e Masculino
 #          2. Nesta Tarefa 6 não crie novas variáveis no banco de dados
@@ -491,6 +519,248 @@ write.csv(dados_sim_2, "dados_sim_2.csv", row.names = TRUE)
 # 2. Para informações fetais utilize TIPOBITO
 # 3. Para informações neonatais utilize TIPOBITO não fetal e IDADE entre 0 e 27 dias e RACACOR
 # 4. Para informações maternas utilize TPMORTEOCO, ESC e IDADE
+
+base = data.frame(CODMUNRES=sort(unique(dados_sim_2$CODMUNRES)))
+
+#ANO
+base = cbind(ANO = 2015, base)
+
+#TO - total de Óbitos
+contagem <- table(dados_sim_2$CODMUNRES)
+base$TO <- as.numeric(contagem[match(base$CODMUNRES, names(contagem))])
+
+#TORC - total de óbitos com registros completos nas 87 variáveis do SIM
+dados_sim$completo <- complete.cases(dados_sim)
+contagem_torc <- table(dados_sim$CODMUNRES[dados_sim$completo == TRUE])
+base$TORC <- as.numeric(contagem_torc[match(base$CODMUNRES, names(contagem_torc))])
+
+#TORCR - total de óbitos com registros completos (sem qualquer NA) nas 14 variáveis selecionadas do SIM
+dados_sim_2$completo <- complete.cases(dados_sim_2)
+contagem_torcr <- table(dados_sim_2$CODMUNRES[dados_sim_2$completo == TRUE])
+base$TORCR <- as.numeric(contagem_torcr[match(base$CODMUNRES, names(contagem_torcr))])
+
+#TO_NN - total de óbitos não naturais
+primeira_letra <- substr(dados_sim_2$CAUSABAS, 1, 1)
+dados_sim_2$nao_natural <- primeira_letra %in% c("V", "W", "X", "Y")
+contagem_to_nn <- table(dados_sim_2$CODMUNRES[dados_sim_2$nao_natural == TRUE])
+base$TO_NN <- as.numeric(contagem_to_nn[match(base$CODMUNRES, names(contagem_to_nn))])
+
+#TO_N - total de óbitos naturais
+primeira_letra <- substr(dados_sim_2$CAUSABAS, 1, 1)
+dados_sim_2$natural <- !(primeira_letra %in% c("V", "W", "X", "Y"))
+contagem_to_n <- table(dados_sim_2$CODMUNRES[dados_sim_2$natural == TRUE])
+base$TO_N <- as.numeric(contagem_to_n[match(base$CODMUNRES, names(contagem_to_n))])
+
+#TO_CB_I - total de óbitos por doenças infecciosas ou parasitárias
+primeira_letra <- substr(dados_sim_2$CAUSABAS, 1, 1)
+dados_sim_2$infecciosa <- primeira_letra %in% c("A", "B")
+contagem_toci <- table(dados_sim_2$CODMUNRES[dados_sim_2$infecciosa == TRUE])
+base$TO_CB_I <- as.numeric(contagem_toci[match(base$CODMUNRES, names(contagem_toci))])
+
+#TO_CB_N - total de óbitos por neoplasias ou doenças hematológicas
+primeira_letra <- substr(dados_sim_2$CAUSABAS, 1, 1)
+dados_sim_2$neoplasia_hemato <- primeira_letra %in% c("C", "D")
+contagem_tocbn <- table(dados_sim_2$CODMUNRES[dados_sim_2$neoplasia_hemato == TRUE])
+base$TO_CB_N <- as.numeric(contagem_tocbn[match(base$CODMUNRES, names(contagem_tocbn))])
+
+#TO_CB_C - total de óbitos por doenças circulatórias
+primeira_letra <- substr(dados_sim_2$CAUSABAS, 1, 1)
+dados_sim_2$circulatorio <- primeira_letra == "I"
+contagem_tocbc <- table(dados_sim_2$CODMUNRES[dados_sim_2$circulatorio == TRUE])
+base$TO_CB_C <- as.numeric(contagem_tocbc[match(base$CODMUNRES, names(contagem_tocbc))])
+
+#TO_CB_R - total de óbitos por doenças respiratórias
+primeira_letra <- substr(dados_sim_2$CAUSABAS, 1, 1)
+dados_sim_2$respiratorio <- primeira_letra == "J"
+contagem_tocbr <- table(dados_sim_2$CODMUNRES[dados_sim_2$respiratorio == TRUE])
+base$TO_CB_R <- as.numeric(contagem_tocbr[match(base$CODMUNRES, names(contagem_tocbr))])
+
+#TO_CB_O - total de óbitos por outras causas naturais
+primeira_letra <- substr(dados_sim_2$CAUSABAS, 1, 1)
+letras_mapeadas <- c("A", "B", "C", "D", "I", "J", "V", "W", "X", "Y")
+dados_sim_2$outras_causas <- !(primeira_letra %in% letras_mapeadas)
+contagem_tocbo <- table(dados_sim_2$CODMUNRES[dados_sim_2$outras_causas == TRUE])
+base$TO_CB_O <- as.numeric(contagem_tocbo[match(base$CODMUNRES, names(contagem_tocbo))])
+
+#TO_M - total de óbitos masculinos
+dados_sim_2$masculino <- dados_sim_2$SEXO == "Masculino"
+contagem_tom <- table(dados_sim_2$CODMUNRES[dados_sim_2$masculino == TRUE])
+base$TO_M <- as.numeric(contagem_tom[match(base$CODMUNRES, names(contagem_tom))])
+
+#TO_F - total de óbitos femininos
+dados_sim_2$feminino <- dados_sim_2$SEXO == "Feminino"
+contagem_tof <- table(dados_sim_2$CODMUNRES[dados_sim_2$feminino == TRUE])
+base$TO_F <- as.numeric(contagem_tof[match(base$CODMUNRES, names(contagem_tof))])
+
+#TO_F_IF - total de obitos femininos em idade fértil
+is_feminino <- dados_sim_2$SEXO == "Feminino"
+is_idade_fertil <- dados_sim_2$IDADE >= 415 & dados_sim_2$IDADE <= 449
+dados_sim_2$feminino_if <- is_feminino & is_idade_fertil
+contagem_tofif <- table(dados_sim_2$CODMUNRES[dados_sim_2$feminino_if == TRUE])
+base$TO_F_IF <- as.numeric(contagem_tofif[match(base$CODMUNRES, names(contagem_tofif))])
+
+#TO_FT - total de óbitos fetais
+dados_sim_2$fetal <- dados_sim_2$TIPOBITO == "Fetal"
+contagem_toft <- table(dados_sim_2$CODMUNRES[dados_sim_2$fetal == TRUE])
+base$TO_FT <- as.numeric(contagem_toft[match(base$CODMUNRES, names(contagem_toft))])
+
+#TO_NT - total de óbitos neonatais
+dados_sim_2$neonatal <- (dados_sim_2$IDADE >= 100 & dados_sim_2$IDADE <= 299) | 
+  (dados_sim_2$IDADE >= 300 & dados_sim_2$IDADE <= 327)
+contagem_tont <- table(dados_sim_2$CODMUNRES[dados_sim_2$neonatal == TRUE])
+base$TO_NT <- as.numeric(contagem_tont[match(base$CODMUNRES, names(contagem_tont))])
+
+#TO_NT_P - total de óbitos neonatais precoces
+dados_sim_2$neonatal_precoce <- (dados_sim_2$IDADE >= 100 & dados_sim_2$IDADE <= 299) | 
+  (dados_sim_2$IDADE >= 300 & dados_sim_2$IDADE <= 306)
+contagem_tontp <- table(dados_sim_2$CODMUNRES[dados_sim_2$neonatal_precoce == TRUE])
+base$TO_NT_P <- as.numeric(contagem_tontp[match(base$CODMUNRES, names(contagem_tontp))])
+
+#TO_NT_T - total de óbitos neonatais tardios
+dados_sim_2$neonatal_tardio <- dados_sim_2$IDADE >= 307 & dados_sim_2$IDADE <= 327
+contagem_tontt <- table(dados_sim_2$CODMUNRES[dados_sim_2$neonatal_tardio == TRUE])
+base$TO_NT_T <- as.numeric(contagem_tontt[match(base$CODMUNRES, names(contagem_tontt))])
+
+#TO_PNT - total de óbitos pós-neonatal
+dados_sim_2$pos_neonatal <- (dados_sim_2$IDADE >= 328 & dados_sim_2$IDADE <= 399) | 
+  (dados_sim_2$IDADE >= 401 & dados_sim_2$IDADE <= 411)
+contagem_topnt <- table(dados_sim_2$CODMUNRES[dados_sim_2$pos_neonatal == TRUE])
+base$TO_PNT <- as.numeric(contagem_topnt[match(base$CODMUNRES, names(contagem_topnt))])
+
+#TO_MT_G - total de óbitos maternos durante a gestação
+dados_sim_2$gestacao <- dados_sim_2$MORTEPARTO == "Antes"
+contagem_tomtg <- table(dados_sim_2$CODMUNRES[dados_sim_2$gestacao == TRUE])
+base$TO_MT_G <- as.numeric(contagem_tomtg[match(base$CODMUNRES, names(contagem_tomtg))])
+
+#TONT_B - total de óbitos neonatais da raça/cor branca
+is_neonatal <- (dados_sim_2$IDADE >= 100 & dados_sim_2$IDADE <= 299) | 
+  (dados_sim_2$IDADE >= 300 & dados_sim_2$IDADE <= 327)
+is_branca <- dados_sim_2$RACACOR == "Branca"
+dados_sim_2$neonatal_branca <- is_neonatal & is_branca
+contagem_tontb <- table(dados_sim_2$CODMUNRES[dados_sim_2$neonatal_branca == TRUE])
+base$TONT_B <- as.numeric(contagem_tontb[match(base$CODMUNRES, names(contagem_tontb))])
+
+#TONT_PT - total de óbitos neonatais da raça/cor preta
+is_preta <- dados_sim_2$RACACOR == "Preta"
+dados_sim_2$neonatal_preta <- is_neonatal & is_preta
+contagem_tontpt <- table(dados_sim_2$CODMUNRES[dados_sim_2$neonatal_preta == TRUE])
+base$TONT_PT <- as.numeric(contagem_tontpt[match(base$CODMUNRES, names(contagem_tontpt))])
+
+#TONT_A - total de óbitos neonatais da raça/cor amarela
+is_amarela <- dados_sim_2$RACACOR == "Amarela"
+dados_sim_2$neonatal_amarela <- is_neonatal & is_amarela
+contagem_tonta <- table(dados_sim_2$CODMUNRES[dados_sim_2$neonatal_amarela == TRUE])
+base$TONT_A <- as.numeric(contagem_tonta[match(base$CODMUNRES, names(contagem_tonta))])
+
+#TONT_PD - total de óbitos neonatais da raça/cor parda
+is_parda <- dados_sim_2$RACACOR == "Parda"
+dados_sim_2$neonatal_parda <- is_neonatal & is_parda
+contagem_tontpd <- table(dados_sim_2$CODMUNRES[dados_sim_2$neonatal_parda == TRUE])
+base$TONT_PD <- as.numeric(contagem_tontpd[match(base$CODMUNRES, names(contagem_tontpd))])
+
+#TONT_I - total de óbitos neonatais da raça/cor indígena
+is_indigena <- dados_sim_2$RACACOR == "Indígena"
+dados_sim_2$neonatal_indigena <- is_neonatal & is_indigena
+contagem_tonti <- table(dados_sim_2$CODMUNRES[dados_sim_2$neonatal_indigena == TRUE])
+base$TONT_I <- as.numeric(contagem_tonti[match(base$CODMUNRES, names(contagem_tonti))])
+
+#TO_MT - total de óbitos maternos (precoces e tardios)
+dados_sim_2$materno_consolidado <- (dados_sim_2$OBITOGRAV == "Sim") | (dados_sim_2$OBITOPUERP == "Sim, até 42 dias após o parto") | (dados_sim_2$OBITOPUERP == "Sim, de 43 dias a 1 ano")
+contagem_tomt <- table(dados_sim_2$CODMUNRES[dados_sim_2$materno_consolidado == TRUE])
+base$TO_MT <- as.numeric(contagem_tomt[match(base$CODMUNRES, names(contagem_tomt))])
+
+#TO_MT_DG - total de óbitos maternos durante a gestação
+dados_sim_2$gestante_sim <- dados_sim_2$OBITOGRAV == "Sim"
+contagem_tomtdg <- table(dados_sim_2$CODMUNRES[dados_sim_2$gestante_sim == TRUE])
+base$TO_MT_DG <- as.numeric(contagem_tomtdg[match(base$CODMUNRES, names(contagem_tomtdg))])
+
+#TO_MT_PT - total de óbitos maternos no parto
+dados_sim_2$no_parto <- dados_sim_2$MORTEPARTO == "Durante"
+contagem_tomtpt <- table(dados_sim_2$CODMUNRES[dados_sim_2$no_parto == TRUE])
+base$TO_MT_PT <- as.numeric(contagem_tomtpt[match(base$CODMUNRES, names(contagem_tomtpt))])
+
+#TO_MT_AB - total de óbitos maternos no abortamento
+causa_3 <- substr(dados_sim_2$CAUSABAS, 1, 3)
+dados_sim_2$aborto <- causa_3 %in% c("O03", "O04", "O05", "O06", "O07", "O08")
+contagem_tomtab <- table(dados_sim_2$CODMUNRES[dados_sim_2$aborto == TRUE])
+base$TO_MT_AB <- as.numeric(contagem_tomtab[match(base$CODMUNRES, names(contagem_tomtab))])
+
+#TO_MT_42 - total de óbitos maternos até 42 dias após o parto
+dados_sim_2$puerperio_42 <- dados_sim_2$OBITOPUERP == "Sim, até 42 dias após o parto"
+contagem_tomt42 <- table(dados_sim_2$CODMUNRES[dados_sim_2$puerperio_42 == TRUE])
+base$TO_MT_42 <- as.numeric(contagem_tomt42[match(base$CODMUNRES, names(contagem_tomt42))])
+
+#TO_MT_43 - total de óbitos maternos de 43 dias até 1 ano após o parto
+dados_sim_2$puerperio_43 <- dados_sim_2$OBITOPUERP == "Sim, de 43 dias a 1 ano"
+contagem_tomt43 <- table(dados_sim_2$CODMUNRES[dados_sim_2$puerperio_43 == TRUE])
+base$TO_MT_43 <- as.numeric(contagem_tomt43[match(base$CODMUNRES, names(contagem_tomt43))])
+
+#TO_MT_P - total de óbitos maternos precoces
+colunas <- c("TO_MT_DG", "TO_MT_PT", "TO_MT_AB", "TO_MT_42")
+base$TO_MT_P <- rowSums(base[, colunas], na.rm = TRUE)
+base$TO_MT_P[base$TO_MT_P == 0] = NA
+
+#TO_MT_P_I - total de óbitos maternos precoces de mulheres em idade fértil
+is_idade_fertil <- dados_sim_2$IDADE >= 415 & dados_sim_2$IDADE <= 449
+is_precoce <- (dados_sim_2$OBITOGRAV == "Sim") | 
+  (dados_sim_2$OBITOPUERP == "Sim, até 42 dias após o parto") |
+  (substr(dados_sim_2$CAUSABAS, 1, 3) %in% c("O03", "O04", "O05", "O06", "O07", "O08"))
+dados_sim_2$precoce_idade_especifica <- is_precoce & is_idade_fertil
+contagem_tomtpi <- table(dados_sim_2$CODMUNRES[dados_sim_2$precoce_idade_especifica == TRUE])
+base$TO_MT_P_I <- as.numeric(contagem_tomtpi[match(base_final$CODMUNRES, names(contagem_tomtpi))])
+
+# TO_MT_P_ES - total de óbitos maternos precoces de mulheres sem escolaridade 
+is_sem_escolaridade <- dados_sim_2$ESC2010 == "Sem escolaridade"
+dados_sim_2$precoce_sem_esc <- is_precoce & is_sem_escolaridade
+contagem_tomtpes <- table(dados_sim_2$CODMUNRES[dados_sim_2$precoce_sem_esc == TRUE])
+base$TO_MT_P_ES <- as.numeric(contagem_tomtpes[match(base$CODMUNRES, names(contagem_tomtpes))])
+
+# TO_MT_P_EFI - total de óbitos maternos precoces de mulheres com escolaridade fundamental I 
+is_fund_1 <- dados_sim_2$ESC2010 == "Fundamental I (1ª a 4ª série)"
+dados_sim_2$precoce_fund_1 <- is_precoce & is_fund_1
+contagem_tomtpefi <- table(dados_sim_2$CODMUNRES[dados_sim_2$precoce_fund_1 == TRUE])
+base$TO_MT_P_EFI <- as.numeric(contagem_tomtpefi[match(base$CODMUNRES, names(contagem_tomtpefi))])
+
+#TO_MT_P_EFII - total de óbitos maternos precoces de mulheres com escolaridade fundamental II
+is_fund_2 <- dados_sim_2$ESC == "Fundamental II (5ª a 8ª série)"
+dados_sim_2$precoce_fund_2 <- is_precoce & is_fund_2
+contagem_tomtpefii <- table(dados_sim_2$CODMUNRES[dados_sim_2$precoce_fund_2 == TRUE])
+base$TO_MT_P_EFII <- as.numeric(contagem_tomtpefii[match(base$CODMUNRES, names(contagem_tomtpefii))])
+
+#TO_MT_P_EM - total de óbitos maternos precoces de mulheres com escolaridade de ensino médio
+is_medio <- dados_sim_2$ESC == "Médio (antigo 2º Grau)"
+dados_sim_2$precoce_medio <- is_precoce & is_medio
+contagem_tomtpem <- table(dados_sim_2$CODMUNRES[dados_sim_2$precoce_medio == TRUE])
+base$TO_MT_P_EM <- as.numeric(contagem_tomtpem[match(base$CODMUNRES, names(contagem_tomtpem))])
+
+#TO_MT_P_ESI - total de óbitos maternos precoces de mulheres com escolaridade superior incompleto
+is_sup_inc <- dados_sim_2$ESC == "Superior Incompleto"
+dados_sim_2$precoce_sup_inc <- is_precoce & is_sup_inc
+contagem_tomtpesi <- table(dados_sim_2$CODMUNRES[dados_sim_2$precoce_sup_inc == TRUE])
+base$TO_MT_P_ESI <- as.numeric(contagem_tomtpesi[match(base$CODMUNRES, names(contagem_tomtpesi))])
+
+#TO_MT_P_ESC total de óbitos maternos precoces de mulheres com escolaridade superior completo
+is_sup_comp <- dados_sim_2$ESC == "Superior completo"
+dados_sim_2$precoce_sup_comp <- is_precoce & is_sup_comp
+contagem_tomtpesc <- table(dados_sim_2$CODMUNRES[dados_sim_2$precoce_sup_comp == TRUE])
+base$TO_MT_P_ESC <- as.numeric(contagem_tomtpesc[match(base$CODMUNRES, names(contagem_tomtpesc))])
+
+#Criando linha do estado
+colunas_numericas <- sapply(base, is.numeric)
+linha_estado <- as.data.frame(t(colSums(base[, colunas_numericas], na.rm = TRUE)))
+linha_estado$NIVEL <- "UF"
+linha_estado$CODMUNRES <- 13
+linha_estado$ANO <- 2015
+linha_estado$TORC[linha_estado$TORC == 0] = NA
+linha_estado$TORCR[linha_estado$TORCR == 0] = NA
+linha_estado$TO_MT_PT[linha_estado$TO_MT_PT == 0] = NA
+linha_estado$TO_MT_P_ESI[linha_estado$TO_MT_P_ESI == 0] = NA
+linha_estado$TO_FT[linha_estado$TO_FT == 0] = NA
+base$NIVEL <- "MUNICIPIO"
+base_completa <- rbind(linha_estado, base)
+nomes <- names(base_completa)
+outros_nomes <- nomes[!nomes %in% c("CODMUNRES", "NIVEL", "ANO")]
+base_completa <- base_completa[, c("ANO", "NIVEL", "CODMUNRES", outros_nomes)]
 
 
 # Tarefa 8: Exporte o banco de dados com o nome SIM_UF.csv
