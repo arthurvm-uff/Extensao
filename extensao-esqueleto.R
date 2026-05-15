@@ -787,6 +787,15 @@ write.csv(base_completa, "SIM_AM.csv")
 # 3. população residente censo 2010 - por faixa etária -  UF - SIDRA - tabela_1552.csv
 # 4. população residente censo 2010 - por faixa etária e sexo -  municípios - SIDRA - tabela_1552.csv
 
+estimada = read.csv2("população residente estimada - UF e municípios - 2015 - SIDRA - tabela_6579.csv", header = T)
+estimada2 <- estimada[substr(as.character(estimada$CODMUNRES), 1, 2) == "13", ]
+censoUF = read.csv2("população residente censo 2010 - UF e municípios - total e por sexo - SIDRA - tabela_1552.csv", header = T)
+censoUF2 = censoUF[substr(as.character(censoUF$CODMUNRES), 1, 2) == "13", ]
+censoFX = read.csv2("população residente censo 2010 - por faixa etária - UF - SIDRA - tabela_1552.csv", header = T)
+censoFX2 = censoFX[substr(as.character(censoFX$CODMUNRES), 1, 2) == "13", ]
+censoSEX = read.csv2("população residente censo 2010 - por faixa etária e sexo - municípios - SIDRA - tabela_1552.csv", header = T)
+censoSEX2 = censoSEX[substr(as.character(censoSEX$CODMUNRES), 1, 2) == "13", ]
+
 # A partir dos arquivos acima gere o banco de dados de nome SIDRA_UF com as seguintes variáveis:
 # 1  ANO    
 # 2  NIVEL
@@ -802,7 +811,91 @@ write.csv(base_completa, "SIM_AM.csv")
 # 12 POPRC_F_15_49
 # 13 POPRC_F_50
 
+base = data.frame(CODMUNRES=sort(unique(estimada2$CODMUNRES)))
+
+#POPRE_T
+base$POPRE_T = estimada2$POPRE_T
+
+#POPRC_T
+base$POPRC_T = censoUF2$POPRC_T
+
+#POPRC_M
+base$POPRC_M = censoUF2$POPRC_M
+
+#POPRC_F
+base$POPRC_F = censoUF2$POPRC_F
+
+#POPRC_15
+sub15 = c("0 a 4 anos", "5 a 9 anos", "10 a 14 anos")
+dados_sub15MUN = censoSEX2[censoSEX2$F_IDADE %in% sub15, ]
+POPRC_15 = aggregate(POP ~ CODMUNRES,
+                     data = dados_sub15MUN,
+                     FUN = sum)
+somaPOP = sum(as.numeric(POPRC_15$POP))
+linha = data.frame(CODMUNRES = 13, POP = somaPOP)
+POPRC_15 = rbind(linha, POPRC_15)
+base$POPRC_15 = POPRC_15$POP
+
+#POPRC_15_49
+pop15_49 = c("15 a 19 anos", "20 a 24 anos", "25 a 29 anos", "30 a 34 anos", "35 a 39 anos", "40 a 44 anos", "45 a 49 anos")
+dados_pop15_49MUN = censoSEX2[censoSEX2$F_IDADE %in% pop15_49, ]
+POPRC_15_49 = aggregate(POP ~ CODMUNRES,
+                        data = dados_pop15_49MUN,
+                        FUN = sum)
+somaPOP_15_49 = sum(as.numeric(POPRC_15_49$POP))
+linha = data.frame(CODMUNRES = 13, POP = somaPOP_15_49)
+POPRC_15_49 = rbind(linha, POPRC_15_49)
+base$POPRC_15_49 = POPRC_15_49$POP
+
+#POPRC_50
+pop50 = c("50 a 54 anos", "55 a 59 anos", "60 a 64 anos", "65 a 69 anos", "70 a 74 anos", "75 a 79 anos", "80 a 89 anos", "90 a 99 anos", "100 anos ou mais")
+dados_pop50MUN = censoSEX2[censoSEX2$F_IDADE %in% pop50, ]
+POPRC_50 = aggregate(POP ~ CODMUNRES,
+                     data = dados_pop50MUN,
+                     FUN = sum)
+somaPOP_50 = sum(as.numeric(POPRC_50$POP))
+linha = data.frame(CODMUNRES = 13, POP = somaPOP_50)
+POPRC_50 = rbind(linha, POPRC_50)
+base$POPRC_50 = POPRC_50$POP
+
+#POPRC_F_15
+POPRC_F_15 = aggregate(POPF ~ CODMUNRES,
+                       data = dados_sub15MUN,
+                       FUN = sum)
+somaPOP = sum(as.numeric(POPRC_F_15$POPF))
+linha = data.frame(CODMUNRES = 13, POPF = somaPOP)
+POPRC_F_15 = rbind(linha, POPRC_F_15)
+base$POPRC_F_15 = POPRC_F_15$POP
+
+#POPRC_F_15_49
+POPRC_F_15_49 = aggregate(POPF ~ CODMUNRES,
+                          data = dados_pop15_49MUN,
+                          FUN = sum)
+somaPOPF_15_49 = sum(as.numeric(POPRC_F_15_49$POPF))
+linha = data.frame(CODMUNRES = 13, POPF = somaPOPF_15_49)
+POPRC_F_15_49 = rbind(linha, POPRC_F_15_49)
+base$POPRC_F_15_49 = POPRC_F_15_49$POPF
+
+#POPRC_F_50
+POPRC_F_50 = aggregate(POPF ~ CODMUNRES,
+                       data = dados_pop50MUN,
+                       FUN = sum)
+somaPOP_50 = sum(as.numeric(POPRC_F_50$POPF))
+linha = data.frame(CODMUNRES = 13, POPF = somaPOP_50)
+POPRC_F_50 = rbind(linha, POPRC_F_50)
+base$POPRC_F_50 = POPRC_F_50$POPF
+
+base$ANO = 2015
+base$NIVEL = "MUNICIPIO"
+nomes <- names(base)
+outros_nomes <- nomes[!nomes %in% c("CODMUNRES", "NIVEL", "ANO")]
+base <- base[, c("ANO", "NIVEL", "CODMUNRES", outros_nomes)]
+base[1, "NIVEL"] = "UF"
+
 # Exporte o arquivo em formato CSV
+
+write.csv(base, "SIDRA_AM.csv")
+
 # Faça o commit com a mensagem "Script e dados TAREFA 3 - SIDRA"
 
 #####################################################################################################
