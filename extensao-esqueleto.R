@@ -901,6 +901,8 @@ write.csv(base, "SIDRA_AM.csv")
 # Tarefa 2: Acesso aos bancos de dados do SINISA e obtenção da informação
 # Escreva os comandos da Tarefa 2 estando na branch OUTROS# Leia o arquivo agua e esgoto - município - 2015.csv
 
+naosei = read.csv2("agua e esgoto - município - 2015.csv", header = T)
+naosei2 = naosei[substr(as.character(naosei$CODMUNRES), 1, 2) == 13 ,]
 
 # A partir do arquivo acima gere o banco de dados de nome SINISA_UF com as seguintes variáveis:
 # 1  ANO    
@@ -909,15 +911,41 @@ write.csv(base, "SIDRA_AM.csv")
 # 4 POPR_RA
 # 5 POPR_RE
 
+base= data.frame(naosei2$CODMUNRES)
+names(base)[names(base) == "naosei2.CODMUNRES"] = "CODMUNRES"
+base$ANO = 2015
+base$NIVEL = "MUNICIPIO"
+base$POPR_RA = naosei2$POPR_RA
+base$POPR_RE = naosei2$POPR_RE
+linha = data.frame(ANO = 2015, NIVEL = "UF", CODMUNRES = 13, POPR_RA = sum(as.numeric(base$POPR_RA), na.rm = T), POPR_RE = sum(as.numeric(base$POPR_RE), na.rm=T))
+nomes = names(base)
+outros_nomes <- nomes[!nomes %in% c("CODMUNRES", "NIVEL", "ANO")]
+base <- base[, c("ANO", "NIVEL", "CODMUNRES", outros_nomes)]
+base = rbind(linha, base)
+
 # Exporte o arquivo em formato CSV
+
+write.csv(base, "SINISA_AM.csv")
+
 # Faça o commit com a mensagem "Script e dados TAREFA 3 - SINISA"
 
 # Tarefa 3: Acesso aos bancos de dados do ATLAS  e obtenção da informação
 # Escreva os comandos da Tarefa 3 estando na branch OUTROS
 # Leia os arquivos:
-# 1. códigos dos municípios - 2010.csv      
+# 1. códigos dos municípios - 2010.csv
+
+cod=read.csv2("códigos dos municípios - 2010.csv", header = T)
+
 # 2. IDHM - 2010 (CENSO) e 2015 (PNAD) - total e por sexo - UF - Atlas Brasil.csv
+
+idhm=read.csv2("IDHM - 2010 (CENSO) e 2015 (PNAD) - total e por sexo - UF - Atlas Brasil.csv", header = T)
+
 # 3. IDHM - 2010 - municípios - Atlas Brasil.csv
+
+idhm2=read.csv2("IDHM - 2010 - municípios - Atlas Brasil.csv", header = T)
+idhm2$CODMUNRES = cod$CODMUNRES
+idhm2 = idhm2[substr(as.character(idhm2$CODMUNRES), 1, 2) == 13, ]
+
 # A partir do arquivo acima gere o banco de dados de nome ATLAS_UF com as seguintes variáveis:
 # 1  ANO    
 # 2  NIVEL
@@ -927,7 +955,24 @@ write.csv(base, "SIDRA_AM.csv")
 # 6 IDHM_CA_M
 # 7 IDHM_CA_F
 
+base= data.frame(naosei2$CODMUNRES)
+names(base)[names(base) == "naosei2.CODMUNRES"] = "CODMUNRES"
+base$ANO = 2010
+base$NIVEL = "MUNICIPIO"
+base$IDHM_A = NA
+base$IDHM_CA = idhm2$IDHM_2010
+base$IDHM_CA_M = NA
+base$IDHM_CA_F = NA
+nomes = names(base)
+outros_nomes <- nomes[!nomes %in% c("CODMUNRES", "NIVEL", "ANO")]
+base <- base[, c("ANO", "NIVEL", "CODMUNRES", outros_nomes)] 
+linha = data.frame(ANO = 2015, NIVEL = "UF", CODMUNRES = 13, IDHM_A = 0.711, IDHM_CA = NA, IDHM_CA_M = 0.649, IDHM_CA_F = 0.701)
+base = rbind(linha, base)
+
 # Exporte o arquivo em formato CSV
+
+write.csv(base, "ATLAS_AM.csv")
+
 # Faça o commit com a mensagem "Script e dados TAREFA 3 - ATLAS"
 
 #####################################################################################################
