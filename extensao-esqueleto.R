@@ -975,14 +975,39 @@ write.csv(base, "ATLAS_AM.csv")
 
 # Faça o commit com a mensagem "Script e dados TAREFA 3 - ATLAS"
 
-#####################################################################################################
-# ETAPA 4: GERAR BANCO DE DADOS FINAL DO ESTADO, BASEADO NAS ANÁLISES DE SINASC, SIM, IBGE, SNIS,...
-######################################################################################################
-# Só inicie esta Etapa quando a professora orientar
-# ESTANDO NA BRANCH SINASC, NÃO ALTERE NADA NO SCRIPT REFERENTE A ETAPA 4
+################################################################
+# ETAPA 4: GERAR BANCO DE DADOS FINAL DO ESTADO COM DADOS DO SIDRA, ATLAS, SINASC, SIM, SINISA E INDICADORES
+################################################################
 
-# Cada aluno gerar um dataframe de uma única linha (referente ao seu estado) com as variáveis na ordem indicada pela professora
 
+# Tarefa 1: Fazer o merge dos bancos de dados criados nas etapas anteriores (SIDRA_UF, ATLAS_ UF,  SINASC_UF, SIM_UF e SINISA_UF), 
+# sendo que as variáveis deverão seguir a ordem
+
+# ANO, NIVEL, CODMUNRES (uma única vez), variáveis do SIDRA, do ATLAS, do SINASC, do SIM e da SINISA. No merge deve constar qualquer município que esteja em pelo menos um dos bancos
+# Chamar o banco de dados de DA_UF
+
+base = data.frame(SIDRA$CODMUNRES)
+names(base)[names(base) == "SIDRA.CODMUNRES"] = "CODMUNRES"
+base$ANO = 2015
+base$NIVEL = SIDRA$NIVEL
+base <- base[, c("ANO", "NIVEL", "CODMUNRES")]
+nomes = names(SIDRA)
+sidra_var <- nomes[!nomes %in% c("CODMUNRES", "NIVEL", "ANO")]
+base <- cbind(base, SIDRA[, -(1:4)])
+base <- cbind(base, ATLAS[, -(1:4)])
+base <- cbind(base, SINASC[, -(1:4)])
+base <- cbind(base, SIM[, -(1:4)])
+base <- cbind(base, SINISA[, -(1:4)])
+
+# Após o merge dos bancos, fazer commit “Script e dados agregados da UF”
+
+
+# Tarefa 2: Acrescentar no banco DA_UF os indicadores TFG, TMG, RMM, TMM, TMM_P, TMN, TMN_P, TMN_T e TMI e chamar o banco de BDEM_UF_2015
+
+# Após a criação do banco, fazer commit “Script e dados BDEM_UF_2015”
+
+# Exporte o arquivo em formato CSV
+# Faça o commit com a mensagem "Script e dados BDEM"
 
 
 ############################################################################################
