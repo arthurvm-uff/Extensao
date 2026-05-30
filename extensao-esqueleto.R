@@ -1004,9 +1004,20 @@ base <- cbind(base, SINISA[, -(1:4)])
 
 # Tarefa 2: Acrescentar no banco DA_UF os indicadores TFG, TMG, RMM, TMM, TMM_P, TMN, TMN_P, TMN_T e TMI e chamar o banco de BDEM_UF_2015
 
-# Após a criação do banco, fazer commit “Script e dados BDEM_UF_2015”
+base$TFG <- (base$TN / base$POPRC_F_15_49) * 1000
+base$TMG <- (base$TO / base$POPRE_T) * 1000
+base$RMM <- (base$TO_MT / base$TN) * 100000
+base$TMM <- (base$TO_MT / base$POPRC_F_15_49) * 100000
+base$TMM_P <- (base$TO_MT_P / base$POPRC_F_15_49) * 100000
+base$TMN <- (base$TO_NT / base$TN) * 1000
+base$TMN_P <- (base$TO_NT_P / base$TN) * 1000
+base$TMN_T <- (base$TO_NT_T / base$TN) * 1000
+base$TMI <- ((base$TO_NT + base$TO_PNT) / base$TN) * 1000
 
 # Exporte o arquivo em formato CSV
+
+write.csv(base, "DA_AM.csv")
+
 # Faça o commit com a mensagem "Script e dados BDEM"
 
 
